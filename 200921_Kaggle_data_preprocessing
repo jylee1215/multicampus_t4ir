@@ -1,0 +1,843 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "from datetime import datetime"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#데이터 초기화\n",
+    "def load_train():\n",
+    "    train = pd.read_csv(\"data/bike-sharing-demand/train.csv\", parse_dates= [\"datetime\"])\n",
+    "    train[\"year\"] = train.datetime.dt.year\n",
+    "    train[\"month\"] = train.datetime.dt.month\n",
+    "    train[\"day\"] = train.datetime.dt.day\n",
+    "    train[\"hour\"] = train.datetime.dt.hour\n",
+    "    train[\"dayofweek\"] = train[\"datetime\"].dt.weekday\n",
+    "    return train"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### windspeed열 평균으로 대체"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "train = load_train()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-4-5fadbe5f4026>:1: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  train[\"windspeed\"][train[\"windspeed\"] == 0] = train[\"windspeed\"].mean()\n"
+     ]
+    }
+   ],
+   "source": [
+    "train[\"windspeed\"][train[\"windspeed\"] == 0] = train[\"windspeed\"].mean()\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "(train[\"windspeed\"] == 0).sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>datetime</th>\n",
+       "      <th>season</th>\n",
+       "      <th>holiday</th>\n",
+       "      <th>workingday</th>\n",
+       "      <th>weather</th>\n",
+       "      <th>temp</th>\n",
+       "      <th>atemp</th>\n",
+       "      <th>humidity</th>\n",
+       "      <th>windspeed</th>\n",
+       "      <th>casual</th>\n",
+       "      <th>registered</th>\n",
+       "      <th>count</th>\n",
+       "      <th>year</th>\n",
+       "      <th>month</th>\n",
+       "      <th>day</th>\n",
+       "      <th>hour</th>\n",
+       "      <th>dayofweek</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>2011-01-01 00:00:00</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9.84</td>\n",
+       "      <td>14.395</td>\n",
+       "      <td>81</td>\n",
+       "      <td>12.799395</td>\n",
+       "      <td>3</td>\n",
+       "      <td>13</td>\n",
+       "      <td>16</td>\n",
+       "      <td>2011</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2011-01-01 01:00:00</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9.02</td>\n",
+       "      <td>13.635</td>\n",
+       "      <td>80</td>\n",
+       "      <td>12.799395</td>\n",
+       "      <td>8</td>\n",
+       "      <td>32</td>\n",
+       "      <td>40</td>\n",
+       "      <td>2011</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2011-01-01 02:00:00</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9.02</td>\n",
+       "      <td>13.635</td>\n",
+       "      <td>80</td>\n",
+       "      <td>12.799395</td>\n",
+       "      <td>5</td>\n",
+       "      <td>27</td>\n",
+       "      <td>32</td>\n",
+       "      <td>2011</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>2011-01-01 03:00:00</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9.84</td>\n",
+       "      <td>14.395</td>\n",
+       "      <td>75</td>\n",
+       "      <td>12.799395</td>\n",
+       "      <td>3</td>\n",
+       "      <td>10</td>\n",
+       "      <td>13</td>\n",
+       "      <td>2011</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>2011-01-01 04:00:00</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9.84</td>\n",
+       "      <td>14.395</td>\n",
+       "      <td>75</td>\n",
+       "      <td>12.799395</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2011</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>4</td>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10881</th>\n",
+       "      <td>2012-12-19 19:00:00</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>15.58</td>\n",
+       "      <td>19.695</td>\n",
+       "      <td>50</td>\n",
+       "      <td>26.002700</td>\n",
+       "      <td>7</td>\n",
+       "      <td>329</td>\n",
+       "      <td>336</td>\n",
+       "      <td>2012</td>\n",
+       "      <td>12</td>\n",
+       "      <td>19</td>\n",
+       "      <td>19</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10882</th>\n",
+       "      <td>2012-12-19 20:00:00</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>14.76</td>\n",
+       "      <td>17.425</td>\n",
+       "      <td>57</td>\n",
+       "      <td>15.001300</td>\n",
+       "      <td>10</td>\n",
+       "      <td>231</td>\n",
+       "      <td>241</td>\n",
+       "      <td>2012</td>\n",
+       "      <td>12</td>\n",
+       "      <td>19</td>\n",
+       "      <td>20</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10883</th>\n",
+       "      <td>2012-12-19 21:00:00</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>13.94</td>\n",
+       "      <td>15.910</td>\n",
+       "      <td>61</td>\n",
+       "      <td>15.001300</td>\n",
+       "      <td>4</td>\n",
+       "      <td>164</td>\n",
+       "      <td>168</td>\n",
+       "      <td>2012</td>\n",
+       "      <td>12</td>\n",
+       "      <td>19</td>\n",
+       "      <td>21</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10884</th>\n",
+       "      <td>2012-12-19 22:00:00</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>13.94</td>\n",
+       "      <td>17.425</td>\n",
+       "      <td>61</td>\n",
+       "      <td>6.003200</td>\n",
+       "      <td>12</td>\n",
+       "      <td>117</td>\n",
+       "      <td>129</td>\n",
+       "      <td>2012</td>\n",
+       "      <td>12</td>\n",
+       "      <td>19</td>\n",
+       "      <td>22</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10885</th>\n",
+       "      <td>2012-12-19 23:00:00</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>13.12</td>\n",
+       "      <td>16.665</td>\n",
+       "      <td>66</td>\n",
+       "      <td>8.998100</td>\n",
+       "      <td>4</td>\n",
+       "      <td>84</td>\n",
+       "      <td>88</td>\n",
+       "      <td>2012</td>\n",
+       "      <td>12</td>\n",
+       "      <td>19</td>\n",
+       "      <td>23</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>10886 rows × 17 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                 datetime  season  holiday  workingday  weather   temp  \\\n",
+       "0     2011-01-01 00:00:00       1        0           0        1   9.84   \n",
+       "1     2011-01-01 01:00:00       1        0           0        1   9.02   \n",
+       "2     2011-01-01 02:00:00       1        0           0        1   9.02   \n",
+       "3     2011-01-01 03:00:00       1        0           0        1   9.84   \n",
+       "4     2011-01-01 04:00:00       1        0           0        1   9.84   \n",
+       "...                   ...     ...      ...         ...      ...    ...   \n",
+       "10881 2012-12-19 19:00:00       4        0           1        1  15.58   \n",
+       "10882 2012-12-19 20:00:00       4        0           1        1  14.76   \n",
+       "10883 2012-12-19 21:00:00       4        0           1        1  13.94   \n",
+       "10884 2012-12-19 22:00:00       4        0           1        1  13.94   \n",
+       "10885 2012-12-19 23:00:00       4        0           1        1  13.12   \n",
+       "\n",
+       "        atemp  humidity  windspeed  casual  registered  count  year  month  \\\n",
+       "0      14.395        81  12.799395       3          13     16  2011      1   \n",
+       "1      13.635        80  12.799395       8          32     40  2011      1   \n",
+       "2      13.635        80  12.799395       5          27     32  2011      1   \n",
+       "3      14.395        75  12.799395       3          10     13  2011      1   \n",
+       "4      14.395        75  12.799395       0           1      1  2011      1   \n",
+       "...       ...       ...        ...     ...         ...    ...   ...    ...   \n",
+       "10881  19.695        50  26.002700       7         329    336  2012     12   \n",
+       "10882  17.425        57  15.001300      10         231    241  2012     12   \n",
+       "10883  15.910        61  15.001300       4         164    168  2012     12   \n",
+       "10884  17.425        61   6.003200      12         117    129  2012     12   \n",
+       "10885  16.665        66   8.998100       4          84     88  2012     12   \n",
+       "\n",
+       "       day  hour  dayofweek  \n",
+       "0        1     0          5  \n",
+       "1        1     1          5  \n",
+       "2        1     2          5  \n",
+       "3        1     3          5  \n",
+       "4        1     4          5  \n",
+       "...    ...   ...        ...  \n",
+       "10881   19    19          2  \n",
+       "10882   19    20          2  \n",
+       "10883   19    21          2  \n",
+       "10884   19    22          2  \n",
+       "10885   19    23          2  \n",
+       "\n",
+       "[10886 rows x 17 columns]"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "train.to_csv(\"train_mean.csv\")\n",
+    "train"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### windspeed열 최소값/최대값으로 대체"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-7-6ef15bf08353>:3: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  train.windspeed[train[\"windspeed\"] == 0] = train[\"windspeed\"].max()\n"
+     ]
+    }
+   ],
+   "source": [
+    "#최대값\n",
+    "train = load_train()\n",
+    "train.windspeed[train[\"windspeed\"] == 0] = train[\"windspeed\"].max()\n",
+    "train.to_csv(\"train_max.csv\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-8-5c026a9c1485>:3: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  train[\"windspeed\"][train[\"windspeed\"] == 0] = train[\"windspeed\"][train[\"windspeed\"] != 0].min()\n"
+     ]
+    }
+   ],
+   "source": [
+    "#최대값\n",
+    "train = load_train()\n",
+    "train[\"windspeed\"][train[\"windspeed\"] == 0] = train[\"windspeed\"][train[\"windspeed\"] != 0].min()\n",
+    "train.to_csv(\"train_min.csv\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### windspeed열 weather(season,...) 그룹화 -> 그룹별 windspeed평균 => 값으로 대체"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-9-540656f9fe77>:4: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  train[\"windspeed\"][train[\"windspeed\"] == 0] = train[\"weather\"].map(season)\n"
+     ]
+    }
+   ],
+   "source": [
+    "# weather\n",
+    "train = load_train()\n",
+    "season = train.groupby(\"weather\")[\"windspeed\"].mean()\n",
+    "train[\"windspeed\"][train[\"windspeed\"] == 0] = train[\"weather\"].map(season)\n",
+    "train.to_csv(\"train_weather.csv\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-10-75c409f8bb5f>:4: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  train[\"windspeed\"][train[\"windspeed\"] == 0] = train[\"season\"].map(season)\n"
+     ]
+    }
+   ],
+   "source": [
+    "# season\n",
+    "train = load_train()\n",
+    "season = train.groupby(\"season\")[\"windspeed\"].mean()\n",
+    "train[\"windspeed\"][train[\"windspeed\"] == 0] = train[\"season\"].map(season)\n",
+    "train.to_csv(\"train_season.csv\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### windspeed값이 0인 행 데이터와 가장 유사한 행 data를 n개 추출 -> n개 데이터의 windspeed 평균 => 값으로 대체"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Index(['datetime', 'season', 'holiday', 'workingday', 'weather', 'temp',\n",
+       "       'atemp', 'humidity', 'windspeed', 'casual', 'registered', 'count',\n",
+       "       'year', 'month', 'day', 'hour', 'dayofweek'],\n",
+       "      dtype='object')"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "train = load_train()\n",
+    "train.columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>windspeed</th>\n",
+       "      <th>temp</th>\n",
+       "      <th>atemp</th>\n",
+       "      <th>humidity</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0.0000</td>\n",
+       "      <td>9.84</td>\n",
+       "      <td>14.395</td>\n",
+       "      <td>81</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>0.0000</td>\n",
+       "      <td>9.02</td>\n",
+       "      <td>13.635</td>\n",
+       "      <td>80</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>0.0000</td>\n",
+       "      <td>9.02</td>\n",
+       "      <td>13.635</td>\n",
+       "      <td>80</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>0.0000</td>\n",
+       "      <td>9.84</td>\n",
+       "      <td>14.395</td>\n",
+       "      <td>75</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0.0000</td>\n",
+       "      <td>9.84</td>\n",
+       "      <td>14.395</td>\n",
+       "      <td>75</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10881</th>\n",
+       "      <td>26.0027</td>\n",
+       "      <td>15.58</td>\n",
+       "      <td>19.695</td>\n",
+       "      <td>50</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10882</th>\n",
+       "      <td>15.0013</td>\n",
+       "      <td>14.76</td>\n",
+       "      <td>17.425</td>\n",
+       "      <td>57</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10883</th>\n",
+       "      <td>15.0013</td>\n",
+       "      <td>13.94</td>\n",
+       "      <td>15.910</td>\n",
+       "      <td>61</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10884</th>\n",
+       "      <td>6.0032</td>\n",
+       "      <td>13.94</td>\n",
+       "      <td>17.425</td>\n",
+       "      <td>61</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10885</th>\n",
+       "      <td>8.9981</td>\n",
+       "      <td>13.12</td>\n",
+       "      <td>16.665</td>\n",
+       "      <td>66</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>10886 rows × 4 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "       windspeed   temp   atemp  humidity\n",
+       "0         0.0000   9.84  14.395        81\n",
+       "1         0.0000   9.02  13.635        80\n",
+       "2         0.0000   9.02  13.635        80\n",
+       "3         0.0000   9.84  14.395        75\n",
+       "4         0.0000   9.84  14.395        75\n",
+       "...          ...    ...     ...       ...\n",
+       "10881    26.0027  15.58  19.695        50\n",
+       "10882    15.0013  14.76  17.425        57\n",
+       "10883    15.0013  13.94  15.910        61\n",
+       "10884     6.0032  13.94  17.425        61\n",
+       "10885     8.9981  13.12  16.665        66\n",
+       "\n",
+       "[10886 rows x 4 columns]"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# 상관 높은 변수들 추출\n",
+    "newtrain = train[[\"windspeed\",\"temp\",\"atemp\",\"humidity\"]]\n",
+    "newtrain"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#코사인 유사도\n",
+    "from numpy import dot\n",
+    "from numpy.linalg import norm\n",
+    "def cos_sim(A, B):\n",
+    "       return dot(A[1:], B[1:])/(norm(A[1:])*norm(B[1:]))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 6.0032,  9.84  , 12.88  , 75.    ],\n",
+       "       [16.9979, 15.58  , 19.695 , 76.    ],\n",
+       "       [19.0012, 14.76  , 16.665 , 81.    ],\n",
+       "       ...,\n",
+       "       [15.0013, 13.94  , 15.91  , 61.    ],\n",
+       "       [ 6.0032, 13.94  , 17.425 , 61.    ],\n",
+       "       [ 8.9981, 13.12  , 16.665 , 66.    ]])"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "wind0 = np.array(newtrain[newtrain[\"windspeed\"] == 0])\n",
+    "wind0\n",
+    "wind1 = np.array(newtrain[newtrain[\"windspeed\"] != 0])\n",
+    "wind1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# windspeed 가 0인 행과 거리가 가까운 10개 행의 windspeed 평균으로 보간하는 함수\n",
+    "def cos_mean(idx0):\n",
+    "    dist = []\n",
+    "    for idx in range(len(wind1)):\n",
+    "        cos = cos_sim(wind0[idx0], wind1[idx])\n",
+    "        arr = np.append(cos, wind1[idx][0])\n",
+    "        dist.append(arr)\n",
+    "    mean = pd.DataFrame(dist).sort_values(by= 0, ascending = False)[:10][1].mean()\n",
+    "    mean\n",
+    "    wind0[idx0][0] = mean\n",
+    "    return wind0[idx0][0]\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "# 함수 적용\n",
+    "cos = []\n",
+    "for i in range(len(wind0)):\n",
+    "    cos.append(cos_mean(i))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-25-be862960e2d8>:1: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  train.windspeed[train[\"windspeed\"] == 0] = cos\n"
+     ]
+    }
+   ],
+   "source": [
+    "train.windspeed[train[\"windspeed\"] == 0] = cos"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train.to_csv(\"train_cos.csv\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
