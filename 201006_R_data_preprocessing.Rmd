@@ -1,6 +1,6 @@
 ---
 title: "20.10.06"
-author: "이지윤"
+author: "Elie"
 date: "10/6/2020"
 output:
   html_document: default
